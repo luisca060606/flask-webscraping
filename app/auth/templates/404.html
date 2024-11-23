@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ super() }}
+    404 Not found
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2>Page or resource not Found</h2>
+        <p>{{ error }}</p><br>
+        <span class="label label-success">
+            <a href="{{ url_for('authentication.log_in_user') }}">
+                Back to Login Page
+            </a>
+        </span>
+    </div>
+{% endblock %}

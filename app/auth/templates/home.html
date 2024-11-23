@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ super() }}
+    Home
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h3>Home page Scrap App</h3>
+        <h4 class="text-primary">
+            You Are Logged {{ current_user.user_name.title() }}
+        </h4>
+    </div>
+{% endblock %}

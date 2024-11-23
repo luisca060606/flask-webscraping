@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+    {{ super() }}
+    Scrapy e-commerce
+{% endblock %}
+
+{% block content %}
+    <div class="container form">
+        <h3>Scrapy Articles, Page e-commerce</h3>
+        {% if form %}
+            {{ form.hidden_tag() }}
+            {{ render_form(form) }}
+        {% endif %}
+
+        {% if articles %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Item</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Image</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                        <tr>
+                            <td><a href="{{ article.url_path }}" target="_blank">{{ article.title }}</a></td>
+                            <td>{{ article.price }} {{article.currency}}</td>
+                            <td><img style="height: 50px; width: 50px;" decoded="sync" src="{{ article.url_img }}" alt=""></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        
+    </div>
+    <div class="container text-end">
+        <span class="label label-success">
+            <a class="btn btn-primary" href="{{ url_for('authentication.homepage') }}">
+                Back to Home Page
+            </a>
+        </span>
+    </div>
+{% endblock %}
