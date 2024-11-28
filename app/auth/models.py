@@ -12,6 +12,9 @@ class User(UserMixin, db.Model):
     user_password = db.Column(db.String(80))
     create_date = db.Column(db.DateTime, default=datetime.now)
 
+    def __repr__(self):
+        return f'<User: {self.user_email}>'
+
     def check_password(self, password):
         return bcrypt.check_password_hash(self.user_password, password)
 
