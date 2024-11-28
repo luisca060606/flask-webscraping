@@ -21,7 +21,7 @@ def register_user():
             email=form.email.data,
             password=form.password.data
         )
-        flash("Registration done...")
+        flash("User Registered")
         return redirect(url_for("authentication.log_in_user"))
     
     return render_template("registration.html", form=form)
@@ -88,4 +88,4 @@ def scrapy_data():
 
 @authentication.app_errorhandler(404)
 def page_not_found(error):
-    return render_template('404.html', error=error)
+    return render_template('404.html', error=error), 404
