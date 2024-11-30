@@ -2,8 +2,8 @@ from app import create_app, db
 from app.auth.models import User
 
 
-flask_scraty_app = create_app("prod")
-with flask_scraty_app.app_context():
+flask_scrapy_app = create_app("dev")
+with flask_scrapy_app.app_context():
     db.create_all()
     if not User.query.filter_by(user_name='test').first():
         User.create_user(
@@ -12,4 +12,4 @@ with flask_scraty_app.app_context():
             password='123456'
         )
 
-flask_scraty_app.run()
+flask_scrapy_app.run()
