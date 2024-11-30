@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap5
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
+from flask_migrate import Migrate
 
 
 db = SQLAlchemy()
@@ -24,4 +25,7 @@ def create_app(config_type):
     bcrypt.init_app(app)
     from app.auth import authentication
     app.register_blueprint(authentication)
+    from app.products import products
+    app.register_blueprint(products)
+    migrate = Migrate(app, db)
     return app

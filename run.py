@@ -12,4 +12,6 @@ with flask_scrapy_app.app_context():
             password='123456'
         )
 
-flask_scrapy_app.run()
+# flask_scrapy_app.run()
+if __name__ == "__main__":
+    flask_scrapy_app.run()
