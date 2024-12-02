@@ -1,5 +1,6 @@
 from datetime import datetime
 from app import db
+from sqlalchemy_serializer import SerializerMixin
 
 
 products_store = db.Table('products_store',
@@ -27,7 +28,7 @@ class Store(db.Model):
 		return f"<Store: {self.store_name}>"
 
 
-class Product(db.Model):
+class Product(db.Model, SerializerMixin):
 	__tablename__ = "products"
 	id = db.Column(db.Integer, primary_key=True)
 	product_name = db.Column(db.String(50))
@@ -38,6 +39,15 @@ class Product(db.Model):
 	category = db.relationship('Category', backref=db.backref('products', lazy=True))
 	# many to many relation
 	stores = db.relationship('Store', secondary=products_store, backref=db.backref('products', lazy=True))
+
+	@property
+	def serialize(self):
+		"""Return object data in easily serializable format"""
+		return {
+			'id': self.id,
+			'category_name': self.product_name,
+			'active'  : self.description
+		}	
 
 	def __repr__(self):
 		return f"<User: {self.product_name}>"

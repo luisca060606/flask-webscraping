@@ -1,11 +1,13 @@
 import requests
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, jsonify
 from app.auth.forms import RegistrationForm, LoginForm, ScrapyForm
 from app.auth import authentication
 from app.auth.models import User
 from flask_login import login_user, logout_user, login_required, current_user
 from bs4 import BeautifulSoup
 from lxml import etree
+
+from app.utils.security import Security
 
 
 @authentication.route("/register", methods=["GET", "POST"])
@@ -26,9 +28,9 @@ def register_user():
     
     return render_template("registration.html", form=form)
 
-@authentication.route("/")
-def index():
-    return render_template("index.html")
+# @authentication.route("/")
+# def index():
+#     return render_template("index.html")
 
 @authentication.route("/login", methods=["GET", "POST"])
 def log_in_user():
@@ -85,7 +87,24 @@ def scrapy_data():
         return render_template("scrapy_data.html", **data)
     return render_template("scrapy_data.html", form=form)
 
+@authentication.route('/', methods=['POST'])
+def login():
+    email = request.json['email']
+    password = request.json['password']
+
+    user = User.query.filter_by(user_email=email).first()
+    user.check_password(password)
+    print (user)
+    # login_user(user, True)
+    authenticated_user = login_user(user)
+    print (authenticated_user)
+    if authenticated_user is not None:
+        encoded_token = Security.generate_token(user)
+        return jsonify({"success": True, "token": encoded_token}), 200
+    else:
+        return jsonify({"success": False}), 400
 
 @authentication.app_errorhandler(404)
 def page_not_found(error):
     return render_template('404.html', error=error), 404
+
