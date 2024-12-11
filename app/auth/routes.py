@@ -1,5 +1,5 @@
 import requests
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, jsonify
 from app.auth.forms import RegistrationForm, LoginForm, ScrapyForm
 from app.auth import authentication
 from app.auth.models import User
@@ -7,6 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from bs4 import BeautifulSoup
 from lxml import etree
 
+from app.utils.security import Security
 
 @authentication.route("/register", methods=["GET", "POST"])
 def register_user():
@@ -26,9 +27,9 @@ def register_user():
     
     return render_template("registration.html", form=form)
 
-@authentication.route("/")
+@authentication.route("/", methods=['GET'])
 def index():
-    return render_template("index.html")
+    return redirect(url_for("authentication.log_in_user"))
 
 @authentication.route("/login", methods=["GET", "POST"])
 def log_in_user():
@@ -85,7 +86,96 @@ def scrapy_data():
         return render_template("scrapy_data.html", **data)
     return render_template("scrapy_data.html", form=form)
 
+@authentication.route('/', methods=['POST'])
+def login():
+    email = request.json['email']
+    password = request.json['password']
+
+    user = User.query.filter_by(user_email=email).first()
+    if user and user.check_password(password):
+        authenticated_user = login_user(user)
+    else:
+        authenticated_user = None
+    
+    if authenticated_user is not None:
+        encoded_token = Security.generate_token(user)
+        return jsonify({"isSuccess": True, "token": encoded_token}), 200
+    else:
+        return jsonify({"isSuccess": False, "message": "Incorrect password or email"}), 400
 
 @authentication.app_errorhandler(404)
 def page_not_found(error):
     return render_template('404.html', error=error), 404
+
+# init endpoints api rest users
+@authentication.route('/api/v1/users/', methods=['GET'])
+def get_users():
+    has_access = Security.verify_token(request.headers)
+
+    if has_access:
+        try:
+            users = User.query.all()
+            if (len(users) > 0):
+                return jsonify(users_list=[i.serialize for i in users]), 200
+            else:
+                return jsonify({'message': "NOT FOUND"}), 404
+        except Exception as e:
+            return jsonify({'message': "ERROR", 'success': False}), 400
+    else:
+        return jsonify({'message': 'UnAuthorized'}), 401
+    
+@authentication.route('/api/v1/users/', methods=['POST'])
+def createUser():
+    data = request.json
+    if 'name' not in data or 'email' not in data or 'password' not in data:
+        return jsonify({'isSuccess': False, 'message': 'All fields required'}), 400
+    has_access = Security.verify_token(request.headers)
+
+    if has_access:
+        try:
+            User.create_user(
+                user=data['name'],
+                email=data['email'],
+                password=data['password']
+            )
+            return jsonify({'isSuccess': True, 'message': 'Usere created'}), 200
+        except Exception as e:
+            print (dir(e))
+            print (e.args)
+            return jsonify({'message': "ERROR", 'success': False}), 400
+    else:
+        return jsonify({'message': 'UnAuthorized'}), 401    
+    
+@authentication.route('/api/v1/users/<int:pk>', methods=['GET'])
+def get_user(pk):
+    has_access = Security.verify_token(request.headers)
+
+    if has_access:
+        try:
+            user = User.query.filter_by(id=pk).first()
+            if (user):
+                return jsonify(user.serialize), 200
+            else:
+                return jsonify({'message': "NOT FOUND"}), 404
+        except Exception as e:
+            return jsonify({'message': "ERROR", 'success': False}), 400
+    else:
+        return jsonify({'message': 'UnAuthorized'}), 401
+    
+@authentication.route('/api/v1/users/<int:pk>', methods=['PUT'])
+def put_user(pk):
+    data = request.json
+    has_access = Security.verify_token(request.headers)
+
+    if has_access:
+        try:
+            user = User.query.filter_by(id=pk).first()
+            if (user):
+                return jsonify(user.serialize), 200
+            else:
+                return jsonify({'message': "NOT FOUND"}), 404
+        except Exception as e:
+            return jsonify({'message': "ERROR", 'success': False}), 400
+    else:
+        return jsonify({'message': 'UnAuthorized'}), 401      
+# end endpoints api rest users

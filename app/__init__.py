@@ -24,8 +24,8 @@ def create_app(config_type):
     login_manager.init_app(app)
     bcrypt.init_app(app)
     from app.auth import authentication
-    app.register_blueprint(authentication)
+    app.register_blueprint(authentication, url_prefix='/')
     from app.products import products
-    app.register_blueprint(products)
+    app.register_blueprint(products, url_prefix='/products')
     migrate = Migrate(app, db)
     return app
