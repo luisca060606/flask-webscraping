@@ -12,6 +12,16 @@ class User(UserMixin, db.Model):
     user_password = db.Column(db.String(80))
     create_date = db.Column(db.DateTime, default=datetime.now)
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializable format"""
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'user_email'  : self.user_email,
+            'create_date'  : self.create_date
+        }    
+
     def __repr__(self):
         return f'<User: {self.user_email}>'
 
