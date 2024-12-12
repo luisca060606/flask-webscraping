@@ -14,7 +14,14 @@ class Category(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	category_name = db.Column(db.String(100))
 	active = db.Column(db.Boolean, default=True)
-	# prods
+
+	@property
+	def serialize(self):
+		return {
+			'id': self.id,
+			'category_name': self.category_name,
+			'active'  : self.active,
+		}   
 
 	def __repr__(self):
 		return f'<Category: {self.category_name}>'
