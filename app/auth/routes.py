@@ -1,4 +1,5 @@
 import requests
+import logging
 from flask import render_template, request, flash, redirect, url_for, jsonify
 from app.auth.forms import RegistrationForm, LoginForm, ScrapyForm
 from app.auth import authentication
@@ -8,6 +9,7 @@ from bs4 import BeautifulSoup
 from lxml import etree
 
 from app.utils.security import Security
+logger = logging.getLogger(__name__)
 
 @authentication.route("/register", methods=["GET", "POST"])
 def register_user():
@@ -29,6 +31,7 @@ def register_user():
 
 @authentication.route("/", methods=['GET'])
 def index():
+    logger.info('Init page system')
     return redirect(url_for("authentication.log_in_user"))
 
 @authentication.route("/login", methods=["GET", "POST"])
@@ -86,6 +89,12 @@ def scrapy_data():
         return render_template("scrapy_data.html", **data)
     return render_template("scrapy_data.html", form=form)
 
+
+@authentication.app_errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html', error=error), 404
+
+
 @authentication.route('/', methods=['POST'])
 def login():
     email = request.json['email']
@@ -102,10 +111,6 @@ def login():
         return jsonify({"isSuccess": True, "token": encoded_token}), 200
     else:
         return jsonify({"isSuccess": False, "message": "Incorrect password or email"}), 400
-
-@authentication.app_errorhandler(404)
-def page_not_found(error):
-    return render_template('404.html', error=error), 404
 
 # init endpoints api rest users
 @authentication.route('/api/v1/users/', methods=['GET'])
